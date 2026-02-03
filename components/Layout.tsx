@@ -3,6 +3,7 @@ import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../context/NotificationContext';
+import { APP_MESSAGES } from '../constants';
 
 export const Layout: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -11,8 +12,8 @@ export const Layout: React.FC = () => {
 
   const handleLogout = () => {
     confirm({
-      title: 'Sair do Sistema',
-      message: 'Tem certeza que deseja encerrar sua sessão atual?',
+      title: APP_MESSAGES.AUTH.LOGOUT_CONFIRM_TITLE,
+      message: APP_MESSAGES.AUTH.LOGOUT_CONFIRM_MSG,
       confirmLabel: 'Sair',
       cancelLabel: 'Permanecer',
       onConfirm: () => {

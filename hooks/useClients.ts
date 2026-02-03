@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Client, PaginatedResponse, SortConfig } from '../types';
 import { clientService } from '../services/clientService';
+import { APP_MESSAGES, UI_CONFIG } from '../constants';
 
 export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -11,7 +12,7 @@ export const useClients = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(UI_CONFIG.PAGINATION.DEFAULT_LIMIT);
   const [pagination, setPagination] = useState({
     page: 1,
     total: 0,
@@ -36,7 +37,7 @@ export const useClients = () => {
         lastPage: response.lastPage
       });
     } catch (err) {
-      setError('Erro ao carregar clientes.');
+      setError(APP_MESSAGES.CLIENTS.LOAD_ERROR);
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ export const useClients = () => {
       await clientService.create(data);
       await fetchClients(1);
     } catch (err) {
-      setError('Erro ao cadastrar cliente.');
+      setError(APP_MESSAGES.CLIENTS.CREATE_ERROR);
       throw err;
     } finally {
       setLoading(false);

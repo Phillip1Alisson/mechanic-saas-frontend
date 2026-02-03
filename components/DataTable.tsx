@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { SortConfig } from '../types';
+import { APP_MESSAGES, UI_CONFIG } from '../constants';
 
 export interface Column<T> {
   header: string;
@@ -65,7 +66,7 @@ export function DataTable<T extends { id: string | number }>({
     lg: 'h-12 w-12 border-b-4'
   };
 
-  const limitOptions = [10, 15, 20, 25, 50, 100, 200];
+  const limitOptions = UI_CONFIG.PAGINATION.LIMIT_OPTIONS;
 
   const handleApplyFilter = () => {
     if (onTypeFilterChange) {
@@ -242,7 +243,7 @@ export function DataTable<T extends { id: string | number }>({
                 <td colSpan={columns.length + (renderActions ? 1 : 0)} className="px-6 py-12 text-center text-gray-500">
                   <div className="flex flex-col items-center gap-2">
                     <div className={`animate-spin rounded-full border-blue-500 ${loaderDimensions[loaderSize]}`}></div>
-                    <span className="text-sm font-medium">Carregando dados...</span>
+                    <span className="text-sm font-medium">{APP_MESSAGES.GENERAL.LOADING}</span>
                   </div>
                 </td>
               </tr>

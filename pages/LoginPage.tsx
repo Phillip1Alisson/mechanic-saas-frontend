@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { APP_MESSAGES, AUTH_CONFIG } from '../constants';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +22,7 @@ export const LoginPage: React.FC = () => {
       await signIn(email, password);
       navigate('/clients');
     } catch (err: any) {
-      setError(err.message || 'Erro ao realizar login.');
+      setError(err.message || APP_MESSAGES.AUTH.LOGIN_ERROR);
     } finally {
       setIsSubmitting(false);
     }
@@ -47,7 +48,7 @@ export const LoginPage: React.FC = () => {
             <input 
               type="email" 
               required
-              placeholder="admin@mecanica.com"
+              placeholder={AUTH_CONFIG.DEFAULT_ADMIN_EMAIL}
               className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +76,7 @@ export const LoginPage: React.FC = () => {
           </button>
           
           <p className="text-xs text-center text-gray-400">
-            Dica: Use <strong>admin@mecanica.com</strong> e senha <strong>123456</strong>
+            Dica: Use <strong>{AUTH_CONFIG.DEFAULT_ADMIN_EMAIL}</strong> e senha <strong>{AUTH_CONFIG.DEFAULT_ADMIN_PASS}</strong>
           </p>
         </form>
       </div>

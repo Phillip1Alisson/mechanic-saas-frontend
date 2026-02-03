@@ -7,6 +7,7 @@ import { DataTable, Column } from '../components/DataTable';
 import { Modal } from '../components/Modal';
 import { Client } from '../types';
 import { formatPhone } from '../utils/validators';
+import { APP_MESSAGES } from '../constants';
 
 export const ClientsPage: React.FC = () => {
   const { 
@@ -43,21 +44,21 @@ export const ClientsPage: React.FC = () => {
             // Simulação de update
             console.log('Simulação de Update:', editingClient.id, data);
             info({
-              title: 'Sucesso!',
-              message: 'Os dados do cliente foram atualizados com sucesso.'
+              title: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_TITLE,
+              message: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_MSG
             });
           } else {
             await addClient(data);
             info({
-              title: 'Cliente Cadastrado!',
-              message: 'O novo cliente foi adicionado à base de dados.'
+              title: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_TITLE,
+              message: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_MSG
             });
           }
           closeForm();
         } catch (err: any) {
           error({
             title: 'Erro na Operação',
-            message: err.message || 'Não foi possível completar a ação. Tente novamente.'
+            message: err.message || APP_MESSAGES.GENERAL.GENERIC_ERROR
           });
         }
       }
@@ -76,14 +77,14 @@ export const ClientsPage: React.FC = () => {
 
   const handleDelete = (client: Client) => {
     confirm({
-      title: 'Excluir Cliente',
-      message: `Tem certeza que deseja remover ${client.name} permanentemente?`,
+      title: APP_MESSAGES.CLIENTS.DELETE_CONFIRM_TITLE,
+      message: APP_MESSAGES.CLIENTS.DELETE_CONFIRM_MSG(client.name),
       confirmLabel: 'Excluir',
       onConfirm: () => {
         console.log('Excluir cliente:', client.id);
         info({
-          title: 'Removido',
-          message: 'O cliente foi excluído com sucesso.'
+          title: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_TITLE,
+          message: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_MSG
         });
       }
     });
@@ -168,7 +169,7 @@ export const ClientsPage: React.FC = () => {
         sortConfig={sortConfig}
         onSort={handleSort}
         loaderSize="lg"
-        emptyMessage="Nenhum cliente corresponde aos critérios de busca."
+        emptyMessage={APP_MESSAGES.CLIENTS.EMPTY_LIST}
         renderActions={(client) => (
           <>
             <button 
