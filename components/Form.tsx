@@ -100,8 +100,8 @@ export function Form<T extends Record<string, any>>({
       setFormData(prev => ({ ...prev, [name]: finalValue }));
     }
     
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+    if (errors[name] || errors.root) {
+      setErrors(prev => ({ ...prev, [name]: null, root: null }));
     }
   };
 

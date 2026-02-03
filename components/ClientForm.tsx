@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ClientType, Client } from '../types';
 import { clientSchema } from '../utils/schemas/clientSchema';
 import { Form, FormFieldDefinition } from './Form';
+
+const DEFAULT_NEW_CLIENT_DATA = { type: ClientType.PF } as const;
 
 interface ClientFormProps {
   initialData?: Partial<Client>;
@@ -11,6 +13,11 @@ interface ClientFormProps {
 }
 
 export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
+  const stableInitialData = useMemo(
+    () => initialData ?? DEFAULT_NEW_CLIENT_DATA,
+    [initialData?.id]
+  );
+
   const fields: FormFieldDefinition[] = [
     { 
       name: 'name', 
@@ -46,7 +53,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, o
       title={initialData?.id ? 'Editar Cliente' : 'Novo Cliente'}
       fields={fields}
       schema={clientSchema}
-      initialData={initialData || { type: ClientType.PF }}
+      initialData={stableInitialData}
       onSubmit={onSubmit}
       onCancel={onCancel}
       submitLabel={initialData?.id ? 'Atualizar Dados' : 'Cadastrar Cliente'}
