@@ -6,7 +6,7 @@ import { ClientForm } from '../components/ClientForm';
 import { DataTable, Column } from '../components/DataTable';
 import { Modal } from '../components/Modal';
 import { Client } from '../types';
-import { formatPhone } from '../utils/validators';
+import { formatPhone, formatDocument } from '../utils/validators';
 import { APP_MESSAGES } from '../constants';
 
 export const ClientsPage: React.FC = () => {
@@ -114,9 +114,10 @@ export const ClientsPage: React.FC = () => {
     },
     { 
       header: 'Documento', 
-      accessor: 'document',
+      accessor: (client) => formatDocument(client.document || '', client.type),
       className: 'font-mono text-sm text-gray-500',
-      sortable: true
+      sortable: true,
+      sortKey: 'document'
     },
     { 
       header: 'Tipo', 
