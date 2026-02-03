@@ -4,6 +4,10 @@ export const STORAGE_KEYS = {
   USER: '@MecanicaPro:user',
 };
 
+export const API_CONFIG = {
+  BASE_URL: (import.meta.env?.VITE_API_BASE_URL as string) || 'http://localhost:8081',
+};
+
 export const API_ROUTES = {
   LOGIN: '/login',
   CLIENTS: '/clients',

@@ -12,7 +12,8 @@ import { APP_MESSAGES } from '../constants';
 export const ClientsPage: React.FC = () => {
   const { 
     clients, 
-    loading, 
+    loading,
+    actionLoading,
     pagination, 
     searchTerm,
     typeFilter,
@@ -20,6 +21,8 @@ export const ClientsPage: React.FC = () => {
     limit,
     fetchClients, 
     addClient,
+    updateClient,
+    deleteClient,
     handleSearch,
     handleTypeFilterChange,
     handleLimitChange,
@@ -31,37 +34,42 @@ export const ClientsPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
-  const handleAddClient = async (data: any) => {
+  const handleAddClient = (data: Omit<Client, 'id'>) => {
     const isEditing = !!editingClient;
 
-    confirm({
-      title: isEditing ? 'Confirmar Edição' : 'Confirmar Cadastro',
-      message: `Deseja realmente ${isEditing ? 'salvar as alterações em' : 'cadastrar o cliente'} ${data.name}?`,
-      confirmLabel: isEditing ? 'Salvar' : 'Cadastrar',
-      onConfirm: async () => {
-        try {
-          if (isEditing) {
-            // Simulação de update
-            console.log('Simulação de Update:', editingClient.id, data);
-            info({
-              title: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_TITLE,
-              message: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_MSG
+    return new Promise<void>((resolve, reject) => {
+      confirm({
+        title: isEditing ? 'Confirmar Edição' : 'Confirmar Cadastro',
+        message: `Deseja realmente ${isEditing ? 'salvar as alterações em' : 'cadastrar o cliente'} ${data.name}?`,
+        confirmLabel: isEditing ? 'Salvar' : 'Cadastrar',
+        onConfirm: async () => {
+          try {
+            if (isEditing && editingClient) {
+              await updateClient(editingClient.id, data);
+              info({
+                title: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_TITLE,
+                message: APP_MESSAGES.CLIENTS.UPDATE_SUCCESS_MSG
+              });
+            } else {
+              await addClient(data);
+              info({
+                title: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_TITLE,
+                message: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_MSG
+              });
+            }
+            closeForm();
+            resolve();
+          } catch (err: any) {
+            const message = err?.message || APP_MESSAGES.GENERAL.GENERIC_ERROR;
+            error({
+              title: 'Erro na Operação',
+              message
             });
-          } else {
-            await addClient(data);
-            info({
-              title: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_TITLE,
-              message: APP_MESSAGES.CLIENTS.CREATE_SUCCESS_MSG
-            });
+            reject(err);
           }
-          closeForm();
-        } catch (err: any) {
-          error({
-            title: 'Erro na Operação',
-            message: err.message || APP_MESSAGES.GENERAL.GENERIC_ERROR
-          });
-        }
-      }
+        },
+        onCancel: () => resolve()
+      });
     });
   };
 
@@ -80,12 +88,19 @@ export const ClientsPage: React.FC = () => {
       title: APP_MESSAGES.CLIENTS.DELETE_CONFIRM_TITLE,
       message: APP_MESSAGES.CLIENTS.DELETE_CONFIRM_MSG(client.name),
       confirmLabel: 'Excluir',
-      onConfirm: () => {
-        console.log('Excluir cliente:', client.id);
-        info({
-          title: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_TITLE,
-          message: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_MSG
-        });
+      onConfirm: async () => {
+        try {
+          await deleteClient(client.id);
+          info({
+            title: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_TITLE,
+            message: APP_MESSAGES.CLIENTS.DELETE_SUCCESS_MSG
+          });
+        } catch (err: any) {
+          error({
+            title: 'Erro na Exclusão',
+            message: err?.message || APP_MESSAGES.GENERAL.GENERIC_ERROR
+          });
+        }
       }
     });
   };
@@ -151,6 +166,7 @@ export const ClientsPage: React.FC = () => {
           initialData={editingClient || undefined}
           onSubmit={handleAddClient} 
           onCancel={closeForm} 
+          isSubmitting={actionLoading}
         />
       </Modal>
 

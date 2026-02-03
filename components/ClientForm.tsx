@@ -7,9 +7,10 @@ interface ClientFormProps {
   initialData?: Partial<Client>;
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, onCancel }) => {
+export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, onCancel, isSubmitting }) => {
   const fields: FormFieldDefinition[] = [
     { 
       name: 'name', 
@@ -49,6 +50,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, o
       onSubmit={onSubmit}
       onCancel={onCancel}
       submitLabel={initialData?.id ? 'Atualizar Dados' : 'Cadastrar Cliente'}
+      isLoading={isSubmitting}
     />
   );
 };

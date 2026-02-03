@@ -7,6 +7,7 @@ import { APP_MESSAGES, UI_CONFIG } from '../constants';
 export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,8 +21,8 @@ export const useClients = () => {
   });
 
   const fetchClients = useCallback(async (
-    page: number = 1, 
-    currentLimit: number = limit, 
+    page: number = 1,
+    currentLimit: number = limit,
     search: string = searchTerm,
     type: string = typeFilter,
     sort: SortConfig | null = sortConfig
@@ -34,7 +35,7 @@ export const useClients = () => {
       setPagination({
         page: response.page,
         total: response.total,
-        lastPage: response.lastPage
+        lastPage: response.lastPage,
       });
     } catch (err) {
       setError(APP_MESSAGES.CLIENTS.LOAD_ERROR);
@@ -44,7 +45,7 @@ export const useClients = () => {
   }, [limit, searchTerm, typeFilter, sortConfig]);
 
   const addClient = useCallback(async (data: Omit<Client, 'id'>) => {
-    setLoading(true);
+    setActionLoading(true);
     try {
       await clientService.create(data);
       await fetchClients(1);
@@ -52,9 +53,35 @@ export const useClients = () => {
       setError(APP_MESSAGES.CLIENTS.CREATE_ERROR);
       throw err;
     } finally {
-      setLoading(false);
+      setActionLoading(false);
     }
   }, [fetchClients]);
+
+  const updateClient = useCallback(async (clientId: string, data: Omit<Client, 'id'>) => {
+    setActionLoading(true);
+    try {
+      await clientService.update(clientId, data);
+      await fetchClients(pagination.page);
+    } catch (err) {
+      setError(APP_MESSAGES.GENERAL.GENERIC_ERROR);
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [fetchClients, pagination.page]);
+
+  const deleteClient = useCallback(async (clientId: string) => {
+    setActionLoading(true);
+    try {
+      await clientService.delete(clientId);
+      await fetchClients(pagination.page);
+    } catch (err) {
+      setError(APP_MESSAGES.GENERAL.GENERIC_ERROR);
+      throw err;
+    } finally {
+      setActionLoading(false);
+    }
+  }, [fetchClients, pagination.page]);
 
   // Debounce para pesquisa
   const searchTimeoutRef = useRef<number | null>(null);
@@ -99,6 +126,7 @@ export const useClients = () => {
   return {
     clients,
     loading,
+    actionLoading,
     error,
     pagination,
     searchTerm,
@@ -107,9 +135,11 @@ export const useClients = () => {
     limit,
     fetchClients,
     addClient,
+    updateClient,
+    deleteClient,
     handleSearch,
     handleTypeFilterChange,
     handleLimitChange,
-    handleSort
+    handleSort,
   };
 };

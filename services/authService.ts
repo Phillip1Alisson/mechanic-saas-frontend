@@ -1,21 +1,40 @@
 
 import { User } from '../types';
-import { STORAGE_KEYS, AUTH_CONFIG, APP_MESSAGES } from '../constants';
+import { STORAGE_KEYS, API_ROUTES, APP_MESSAGES } from '../constants';
+import { api } from './api';
+
+interface LoginResponseData {
+  token: string;
+  user?: User | null;
+}
 
 export const authService = {
   async login(email: string, password: string): Promise<{ user: User; token: string }> {
-    // Mock de chamada para API PHP
-    if (email === AUTH_CONFIG.DEFAULT_ADMIN_EMAIL && password === AUTH_CONFIG.DEFAULT_ADMIN_PASS) {
-      const user: User = { id: '1', name: 'Mecânico Chefe', email };
-      const token = 'fake-jwt-token-' + Math.random();
-      
-      localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+    try {
+      const data = await api.post<LoginResponseData>(
+        API_ROUTES.LOGIN,
+        { email, password },
+        { requiresAuth: false }
+      );
+
+      if (!data?.token) {
+        throw new Error(APP_MESSAGES.AUTH.LOGIN_ERROR);
+      }
+
+      const user: User = data.user ?? {
+        id: data.user?.id || 'self',
+        name: data.user?.name || email.split('@')[0] || 'Usuário',
+        email: data.user?.email || email,
+      };
+
+      localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      
-      return { user, token };
+
+      return { user, token: data.token };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : APP_MESSAGES.AUTH.LOGIN_ERROR;
+      throw new Error(message);
     }
-    
-    throw new Error(APP_MESSAGES.AUTH.INVALID_CREDENTIALS);
   },
 
   logout(): void {
