@@ -16,8 +16,8 @@ export const Layout: React.FC = () => {
       message: APP_MESSAGES.AUTH.LOGOUT_CONFIRM_MSG,
       confirmLabel: 'Sair',
       cancelLabel: 'Permanecer',
-      onConfirm: () => {
-        signOut();
+      onConfirm: async () => {
+        await signOut();
         navigate('/login');
       }
     });

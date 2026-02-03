@@ -5,7 +5,7 @@ import { authService } from '../services/authService';
 
 interface AuthContextData extends AuthState {
   signIn: (email: string, pass: string) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   loading: boolean;
 }
 
@@ -32,8 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState({ user, token, isAuthenticated: true });
   }, []);
 
-  const signOut = useCallback(() => {
-    authService.logout();
+  const signOut = useCallback(async () => {
+    await authService.logout();
     setState({ user: null, token: null, isAuthenticated: false });
   }, []);
 

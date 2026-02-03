@@ -37,9 +37,13 @@ export const authService = {
     }
   },
 
-  logout(): void {
-    localStorage.removeItem(STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
+  async logout(): Promise<void> {
+    try {
+      await api.post(API_ROUTES.LOGOUT, {}, { requiresAuth: true });
+    } finally {
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+    }
   },
 
   getStoredData(): { user: User | null; token: string | null } {
