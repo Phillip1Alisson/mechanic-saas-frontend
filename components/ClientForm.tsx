@@ -1,8 +1,6 @@
-
 import React from 'react';
-import { z } from 'zod';
 import { ClientType, Client } from '../types';
-import { isValidCPF, isValidCNPJ } from '../utils/validators';
+import { clientSchema } from '../utils/schemas/clientSchema';
 import { Form, FormFieldDefinition } from './Form';
 
 interface ClientFormProps {
@@ -10,20 +8,6 @@ interface ClientFormProps {
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
 }
-
-const clientSchema = z.object({
-  name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
-  phone: z.string().min(14, 'Telefone incompleto'), // (00) 0000-0000 min
-  type: z.nativeEnum(ClientType),
-  document: z.string().min(11, 'Documento incompleto')
-}).refine((data) => {
-  if (data.type === ClientType.PF) return isValidCPF(data.document);
-  if (data.type === ClientType.PJ) return isValidCNPJ(data.document);
-  return false;
-}, {
-  message: "Documento inválido para o tipo selecionado",
-  path: ["document"]
-});
 
 export const ClientForm: React.FC<ClientFormProps> = ({ initialData, onSubmit, onCancel }) => {
   const fields: FormFieldDefinition[] = [
