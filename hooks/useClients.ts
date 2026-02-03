@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Client, PaginatedResponse } from '../types';
+import { Client, PaginatedResponse, SortConfig } from '../types';
 import { clientService } from '../services/clientService';
 
 export const useClients = () => {
@@ -10,6 +10,7 @@ export const useClients = () => {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
   const [limit, setLimit] = useState(10);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -21,12 +22,13 @@ export const useClients = () => {
     page: number = 1, 
     currentLimit: number = limit, 
     search: string = searchTerm,
-    type: string = typeFilter
+    type: string = typeFilter,
+    sort: SortConfig | null = sortConfig
   ) => {
     setLoading(true);
     setError(null);
     try {
-      const response: PaginatedResponse<Client> = await clientService.list(page, currentLimit, search, type);
+      const response: PaginatedResponse<Client> = await clientService.list(page, currentLimit, search, type, sort);
       setClients(response.data);
       setPagination({
         page: response.page,
@@ -38,7 +40,7 @@ export const useClients = () => {
     } finally {
       setLoading(false);
     }
-  }, [limit, searchTerm, typeFilter]);
+  }, [limit, searchTerm, typeFilter, sortConfig]);
 
   const addClient = useCallback(async (data: Omit<Client, 'id'>) => {
     setLoading(true);
@@ -60,22 +62,37 @@ export const useClients = () => {
     if (searchTimeoutRef.current) window.clearTimeout(searchTimeoutRef.current);
     
     searchTimeoutRef.current = window.setTimeout(() => {
-      fetchClients(1, limit, value, typeFilter);
+      fetchClients(1, limit, value, typeFilter, sortConfig);
     }, 400);
   };
 
   const handleTypeFilterChange = (type: string) => {
     setTypeFilter(type);
-    fetchClients(1, limit, searchTerm, type);
+    fetchClients(1, limit, searchTerm, type, sortConfig);
   };
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
-    fetchClients(1, newLimit, searchTerm, typeFilter);
+    fetchClients(1, newLimit, searchTerm, typeFilter, sortConfig);
+  };
+
+  const handleSort = (field: string) => {
+    let newSort: SortConfig | null = null;
+    
+    if (!sortConfig || sortConfig.field !== field) {
+      newSort = { field, order: 'asc' };
+    } else if (sortConfig.order === 'asc') {
+      newSort = { field, order: 'desc' };
+    } else {
+      newSort = null;
+    }
+    
+    setSortConfig(newSort);
+    fetchClients(1, limit, searchTerm, typeFilter, newSort);
   };
 
   useEffect(() => {
-    fetchClients(1, limit, searchTerm, typeFilter);
+    fetchClients(1, limit, searchTerm, typeFilter, sortConfig);
   }, []);
 
   return {
@@ -85,11 +102,13 @@ export const useClients = () => {
     pagination,
     searchTerm,
     typeFilter,
+    sortConfig,
     limit,
     fetchClients,
     addClient,
     handleSearch,
     handleTypeFilterChange,
-    handleLimitChange
+    handleLimitChange,
+    handleSort
   };
 };

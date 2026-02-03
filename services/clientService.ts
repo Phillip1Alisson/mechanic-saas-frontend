@@ -1,5 +1,5 @@
 
-import { Client, PaginatedResponse, ClientType } from '../types';
+import { Client, PaginatedResponse, ClientType, SortConfig } from '../types';
 
 // Mock persistido em memória para a sessão atual
 let mockClients: Client[] = [
@@ -11,7 +11,13 @@ let mockClients: Client[] = [
 ];
 
 export const clientService = {
-  async list(page: number = 1, limit: number = 10, search: string = '', type?: string): Promise<PaginatedResponse<Client>> {
+  async list(
+    page: number = 1, 
+    limit: number = 10, 
+    search: string = '', 
+    type?: string,
+    sort?: SortConfig | null
+  ): Promise<PaginatedResponse<Client>> {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     let filtered = [...mockClients];
@@ -29,6 +35,20 @@ export const clientService = {
     // Filtro por tipo (PF/PJ)
     if (type && type !== 'all') {
       filtered = filtered.filter(client => client.type === type);
+    }
+
+    // Ordenação
+    if (sort) {
+      filtered.sort((a: any, b: any) => {
+        const valA = a[sort.field]?.toString().toLowerCase() || '';
+        const valB = b[sort.field]?.toString().toLowerCase() || '';
+        
+        if (sort.order === 'asc') {
+          return valA.localeCompare(valB);
+        } else {
+          return valB.localeCompare(valA);
+        }
+      });
     }
     
     const start = (page - 1) * limit;

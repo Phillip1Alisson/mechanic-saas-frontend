@@ -1,11 +1,14 @@
 
 import React, { useState } from 'react';
 import { Modal } from './Modal';
+import { SortConfig } from '../types';
 
 export interface Column<T> {
   header: string;
   accessor: keyof T | ((item: T) => React.ReactNode);
   className?: string;
+  sortable?: boolean;
+  sortKey?: string;
 }
 
 interface PaginationData {
@@ -30,6 +33,9 @@ interface DataTableProps<T> {
   onTypeFilterChange?: (value: string) => void;
   limit?: number;
   onLimitChange?: (limit: number) => void;
+  // Ordenação
+  sortConfig?: SortConfig | null;
+  onSort?: (field: string) => void;
 }
 
 export function DataTable<T extends { id: string | number }>({
@@ -46,7 +52,9 @@ export function DataTable<T extends { id: string | number }>({
   typeFilter = 'all',
   onTypeFilterChange,
   limit,
-  onLimitChange
+  onLimitChange,
+  sortConfig,
+  onSort
 }: DataTableProps<T>) {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [tempTypeFilter, setTempTypeFilter] = useState(typeFilter);
@@ -74,6 +82,24 @@ export function DataTable<T extends { id: string | number }>({
   };
 
   const isFilterActive = typeFilter !== 'all';
+
+  const renderSortIcon = (col: Column<T>) => {
+    if (!col.sortable || !onSort) return null;
+    
+    const key = col.sortKey || (typeof col.accessor === 'string' ? col.accessor : '');
+    const isActive = sortConfig?.field === key;
+
+    return (
+      <div className={`flex flex-col ml-1.5 transition-colors ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-gray-400'}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-2.5 w-2.5 ${isActive && sortConfig?.order === 'desc' ? 'opacity-20' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-2.5 w-2.5 ${isActive && sortConfig?.order === 'asc' ? 'opacity-20' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
@@ -190,11 +216,23 @@ export function DataTable<T extends { id: string | number }>({
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-50 text-gray-600 uppercase text-[11px] tracking-wider font-bold">
             <tr>
-              {columns.map((col, idx) => (
-                <th key={idx} className={`px-6 py-4 ${col.className || ''}`}>
-                  {col.header}
-                </th>
-              ))}
+              {columns.map((col, idx) => {
+                const sortKey = col.sortKey || (typeof col.accessor === 'string' ? col.accessor : '');
+                const isSortable = col.sortable && onSort && sortKey;
+
+                return (
+                  <th 
+                    key={idx} 
+                    className={`px-6 py-4 ${col.className || ''} ${isSortable ? 'cursor-pointer hover:bg-gray-100 transition-colors group' : ''}`}
+                    onClick={() => isSortable && onSort(sortKey)}
+                  >
+                    <div className="flex items-center">
+                      {col.header}
+                      {renderSortIcon(col)}
+                    </div>
+                  </th>
+                );
+              })}
               {renderActions && <th className="px-6 py-4 text-right">Ações</th>}
             </tr>
           </thead>

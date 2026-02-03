@@ -24,6 +24,13 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
+export type SortOrder = 'asc' | 'desc';
+
+export interface SortConfig {
+  field: string;
+  order: SortOrder;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

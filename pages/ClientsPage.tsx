@@ -15,12 +15,14 @@ export const ClientsPage: React.FC = () => {
     pagination, 
     searchTerm,
     typeFilter,
+    sortConfig,
     limit,
     fetchClients, 
     addClient,
     handleSearch,
     handleTypeFilterChange,
-    handleLimitChange 
+    handleLimitChange,
+    handleSort
   } = useClients();
 
   const { confirm, info, error } = useNotification();
@@ -91,12 +93,14 @@ export const ClientsPage: React.FC = () => {
     { 
       header: 'Nome', 
       accessor: 'name',
-      className: 'font-medium text-gray-900'
+      className: 'font-medium text-gray-900',
+      sortable: true
     },
     { 
       header: 'Documento', 
       accessor: 'document',
-      className: 'font-mono text-sm text-gray-500'
+      className: 'font-mono text-sm text-gray-500',
+      sortable: true
     },
     { 
       header: 'Tipo', 
@@ -106,7 +110,9 @@ export const ClientsPage: React.FC = () => {
         }`}>
           {client.type === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}
         </span>
-      )
+      ),
+      sortable: true,
+      sortKey: 'type'
     },
     { 
       header: 'Telefone', 
@@ -152,13 +158,15 @@ export const ClientsPage: React.FC = () => {
         data={clients}
         loading={loading}
         pagination={pagination}
-        onPageChange={(page) => fetchClients(page, limit, searchTerm, typeFilter)}
+        onPageChange={(page) => fetchClients(page, limit, searchTerm, typeFilter, sortConfig)}
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
         typeFilter={typeFilter}
         onTypeFilterChange={handleTypeFilterChange}
         limit={limit}
         onLimitChange={handleLimitChange}
+        sortConfig={sortConfig}
+        onSort={handleSort}
         loaderSize="lg"
         emptyMessage="Nenhum cliente corresponde aos critérios de busca."
         renderActions={(client) => (
