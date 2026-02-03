@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useClients } from '../hooks/useClients';
+import { useNotification } from '../context/NotificationContext';
 import { ClientForm } from '../components/ClientForm';
 import { DataTable, Column } from '../components/DataTable';
 import { Modal } from '../components/Modal';
@@ -21,22 +22,44 @@ export const ClientsPage: React.FC = () => {
     handleTypeFilterChange,
     handleLimitChange 
   } = useClients();
+
+  const { confirm, info, error } = useNotification();
   
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const handleAddClient = async (data: any) => {
-    try {
-      if (editingClient) {
-        console.log('Simulação de Update:', editingClient.id, data);
-        alert('Simulação: Cliente atualizado com sucesso!');
-      } else {
-        await addClient(data);
+    const isEditing = !!editingClient;
+
+    confirm({
+      title: isEditing ? 'Confirmar Edição' : 'Confirmar Cadastro',
+      message: `Deseja realmente ${isEditing ? 'salvar as alterações em' : 'cadastrar o cliente'} ${data.name}?`,
+      confirmLabel: isEditing ? 'Salvar' : 'Cadastrar',
+      onConfirm: async () => {
+        try {
+          if (isEditing) {
+            // Simulação de update
+            console.log('Simulação de Update:', editingClient.id, data);
+            info({
+              title: 'Sucesso!',
+              message: 'Os dados do cliente foram atualizados com sucesso.'
+            });
+          } else {
+            await addClient(data);
+            info({
+              title: 'Cliente Cadastrado!',
+              message: 'O novo cliente foi adicionado à base de dados.'
+            });
+          }
+          closeForm();
+        } catch (err: any) {
+          error({
+            title: 'Erro na Operação',
+            message: err.message || 'Não foi possível completar a ação. Tente novamente.'
+          });
+        }
       }
-      closeForm();
-    } catch (err) {
-      // Erro tratado no Form
-    }
+    });
   };
 
   const handleEdit = (client: Client) => {
@@ -50,10 +73,18 @@ export const ClientsPage: React.FC = () => {
   };
 
   const handleDelete = (client: Client) => {
-    if (confirm(`Deseja realmente excluir ${client.name}?`)) {
-      console.log('Excluir cliente:', client.id);
-      alert('Simulação: Cliente removido.');
-    }
+    confirm({
+      title: 'Excluir Cliente',
+      message: `Tem certeza que deseja remover ${client.name} permanentemente?`,
+      confirmLabel: 'Excluir',
+      onConfirm: () => {
+        console.log('Excluir cliente:', client.id);
+        info({
+          title: 'Removido',
+          message: 'O cliente foi excluído com sucesso.'
+        });
+      }
+    });
   };
 
   const columns: Column<Client>[] = [
