@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useClients } from '../hooks/useClients';
 import { ClientForm } from '../components/ClientForm';
 import { DataTable, Column } from '../components/DataTable';
+import { Modal } from '../components/Modal';
 import { Client } from '../types';
 import { formatPhone } from '../utils/validators';
 
@@ -12,22 +13,23 @@ export const ClientsPage: React.FC = () => {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   const handleAddClient = async (data: any) => {
-    // Se estivéssemos em uma API real, aqui chamaríamos update ou create baseado no ID
-    if (editingClient) {
-      console.log('Atualizando cliente:', editingClient.id, data);
-      alert('Simulação: Cliente atualizado com sucesso!');
-    } else {
-      await addClient(data);
+    try {
+      if (editingClient) {
+        // Mock de atualização
+        console.log('Atualizando cliente:', editingClient.id, data);
+        alert('Simulação: Cliente atualizado com sucesso!');
+      } else {
+        await addClient(data);
+      }
+      closeForm();
+    } catch (err) {
+      // O erro já é tratado dentro do formulário via catch do onSubmit
     }
-    
-    closeForm();
   };
 
   const handleEdit = (client: Client) => {
     setEditingClient(client);
     setShowForm(true);
-    // Scroll suave para o topo do formulário
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const closeForm = () => {
@@ -78,24 +80,29 @@ export const ClientsPage: React.FC = () => {
           <p className="text-gray-500">Gerencie o cadastro de clientes da sua oficina.</p>
         </div>
         
-        {!showForm && (
-          <button 
-            onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm active:scale-95"
-          >
-            + Adicionar Cliente
-          </button>
-        )}
+        <button 
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-md active:scale-95 flex items-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          Novo Cliente
+        </button>
       </div>
 
-      {showForm && (
+      <Modal 
+        isOpen={showForm} 
+        onClose={closeForm}
+        title={editingClient ? 'Editar Cliente' : 'Cadastrar Novo Cliente'}
+      >
         <ClientForm 
-          key={editingClient?.id || 'new'} // CRITICAL: Força o React a remontar o form ao trocar de cliente
+          key={editingClient?.id || 'new'} 
           initialData={editingClient || undefined}
           onSubmit={handleAddClient} 
           onCancel={closeForm} 
         />
-      )}
+      </Modal>
 
       <DataTable<Client>
         columns={columns}
@@ -109,7 +116,7 @@ export const ClientsPage: React.FC = () => {
           <>
             <button 
               onClick={() => handleEdit(client)}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
               title="Editar"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -118,7 +125,7 @@ export const ClientsPage: React.FC = () => {
             </button>
             <button 
               onClick={() => handleDelete(client)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Excluir"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
