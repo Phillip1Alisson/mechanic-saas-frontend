@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Modal } from './Modal';
 
 export interface Column<T> {
   header: string;
@@ -22,9 +23,11 @@ interface DataTableProps<T> {
   renderActions?: (item: T) => React.ReactNode;
   emptyMessage?: string;
   loaderSize?: 'sm' | 'md' | 'lg';
-  // Novos controles solicitados
+  // Filtros e controles
   searchTerm?: string;
   onSearchChange?: (value: string) => void;
+  typeFilter?: string;
+  onTypeFilterChange?: (value: string) => void;
   limit?: number;
   onLimitChange?: (limit: number) => void;
 }
@@ -40,10 +43,14 @@ export function DataTable<T extends { id: string | number }>({
   loaderSize = 'md',
   searchTerm,
   onSearchChange,
+  typeFilter = 'all',
+  onTypeFilterChange,
   limit,
   onLimitChange
 }: DataTableProps<T>) {
-  
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [tempTypeFilter, setTempTypeFilter] = useState(typeFilter);
+
   const loaderDimensions = {
     sm: 'h-4 w-4 border-2',
     md: 'h-8 w-8 border-b-2',
@@ -52,30 +59,82 @@ export function DataTable<T extends { id: string | number }>({
 
   const limitOptions = [10, 15, 20, 25, 50, 100, 200];
 
+  const handleApplyFilter = () => {
+    if (onTypeFilterChange) {
+      onTypeFilterChange(tempTypeFilter);
+    }
+    setIsFilterModalOpen(false);
+  };
+
+  const handleClearFilter = () => {
+    setTempTypeFilter('all');
+    if (onTypeFilterChange) {
+      onTypeFilterChange('all');
+    }
+  };
+
+  const isFilterActive = typeFilter !== 'all';
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
       {/* Table Toolbar */}
-      <div className="p-4 border-b bg-white flex flex-col sm:flex-row gap-4 items-center justify-between">
-        {onSearchChange && (
-          <div className="relative w-full sm:max-w-xs">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              placeholder="Pesquisar..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
-            />
+      <div className="p-4 border-b bg-white flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {onSearchChange && (
+            <div className="relative w-full sm:max-w-xs">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                placeholder="Pesquisar por nome, doc ou tel..."
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
+              />
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            {onTypeFilterChange && (
+              <button
+                onClick={() => {
+                  setTempTypeFilter(typeFilter);
+                  setIsFilterModalOpen(true);
+                }}
+                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
+                  isFilterActive 
+                    ? 'bg-blue-50 border-blue-200 text-blue-600' 
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                }`}
+                title="Filtrar por tipo"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <span className="text-sm font-medium sm:hidden">Filtrar</span>
+              </button>
+            )}
+
+            {isFilterActive && (
+              <button
+                onClick={handleClearFilter}
+                className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Limpar Filtro
+              </button>
+            )}
           </div>
-        )}
+        </div>
 
         {onLimitChange && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 whitespace-nowrap">
-            <label htmlFor="limit-select">Linhas por página:</label>
+          <div className="flex items-center gap-2 text-sm text-gray-500 whitespace-nowrap ml-auto">
+            <label htmlFor="limit-select">Exibir:</label>
             <select
               id="limit-select"
               value={limit}
@@ -83,12 +142,49 @@ export function DataTable<T extends { id: string | number }>({
               className="border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-gray-700 font-medium"
             >
               {limitOptions.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
+                <option key={opt} value={opt}>{opt} linhas</option>
               ))}
             </select>
           </div>
         )}
       </div>
+
+      {/* Filter Modal */}
+      <Modal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        title="Filtrar Resultados"
+      >
+        <div className="p-6 space-y-4">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">Tipo de Cliente</label>
+            <select
+              value={tempTypeFilter}
+              onChange={(e) => setTempTypeFilter(e.target.value)}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-gray-700 font-medium"
+            >
+              <option value="all">Todos os tipos</option>
+              <option value="PF">Pessoa Física (PF)</option>
+              <option value="PJ">Pessoa Jurídica (PJ)</option>
+            </select>
+          </div>
+          
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={() => setIsFilterModalOpen(false)}
+              className="px-4 py-2 text-gray-500 font-medium hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleApplyFilter}
+              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md active:scale-95 transition-all"
+            >
+              Aplicar Filtro
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">

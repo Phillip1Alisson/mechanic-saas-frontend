@@ -13,10 +13,12 @@ export const ClientsPage: React.FC = () => {
     loading, 
     pagination, 
     searchTerm,
+    typeFilter,
     limit,
     fetchClients, 
     addClient,
     handleSearch,
+    handleTypeFilterChange,
     handleLimitChange 
   } = useClients();
   
@@ -119,9 +121,11 @@ export const ClientsPage: React.FC = () => {
         data={clients}
         loading={loading}
         pagination={pagination}
-        onPageChange={(page) => fetchClients(page, limit, searchTerm)}
+        onPageChange={(page) => fetchClients(page, limit, searchTerm, typeFilter)}
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
+        typeFilter={typeFilter}
+        onTypeFilterChange={handleTypeFilterChange}
         limit={limit}
         onLimitChange={handleLimitChange}
         loaderSize="lg"

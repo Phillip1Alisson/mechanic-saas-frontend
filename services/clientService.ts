@@ -11,11 +11,12 @@ let mockClients: Client[] = [
 ];
 
 export const clientService = {
-  async list(page: number = 1, limit: number = 10, search: string = ''): Promise<PaginatedResponse<Client>> {
+  async list(page: number = 1, limit: number = 10, search: string = '', type?: string): Promise<PaginatedResponse<Client>> {
     await new Promise(resolve => setTimeout(resolve, 500));
     
     let filtered = [...mockClients];
     
+    // Filtro por busca textual
     if (search) {
       const searchTerm = search.toLowerCase();
       filtered = filtered.filter(client => 
@@ -23,6 +24,11 @@ export const clientService = {
         client.document.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')) ||
         client.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''))
       );
+    }
+
+    // Filtro por tipo (PF/PJ)
+    if (type && type !== 'all') {
+      filtered = filtered.filter(client => client.type === type);
     }
     
     const start = (page - 1) * limit;

@@ -9,6 +9,7 @@ export const useClients = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [limit, setLimit] = useState(10);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -16,11 +17,16 @@ export const useClients = () => {
     lastPage: 1
   });
 
-  const fetchClients = useCallback(async (page: number = 1, currentLimit: number = limit, search: string = searchTerm) => {
+  const fetchClients = useCallback(async (
+    page: number = 1, 
+    currentLimit: number = limit, 
+    search: string = searchTerm,
+    type: string = typeFilter
+  ) => {
     setLoading(true);
     setError(null);
     try {
-      const response: PaginatedResponse<Client> = await clientService.list(page, currentLimit, search);
+      const response: PaginatedResponse<Client> = await clientService.list(page, currentLimit, search, type);
       setClients(response.data);
       setPagination({
         page: response.page,
@@ -32,7 +38,7 @@ export const useClients = () => {
     } finally {
       setLoading(false);
     }
-  }, [limit, searchTerm]);
+  }, [limit, searchTerm, typeFilter]);
 
   const addClient = useCallback(async (data: Omit<Client, 'id'>) => {
     setLoading(true);
@@ -54,17 +60,22 @@ export const useClients = () => {
     if (searchTimeoutRef.current) window.clearTimeout(searchTimeoutRef.current);
     
     searchTimeoutRef.current = window.setTimeout(() => {
-      fetchClients(1, limit, value);
+      fetchClients(1, limit, value, typeFilter);
     }, 400);
+  };
+
+  const handleTypeFilterChange = (type: string) => {
+    setTypeFilter(type);
+    fetchClients(1, limit, searchTerm, type);
   };
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
-    fetchClients(1, newLimit, searchTerm);
+    fetchClients(1, newLimit, searchTerm, typeFilter);
   };
 
   useEffect(() => {
-    fetchClients(1, limit, searchTerm);
+    fetchClients(1, limit, searchTerm, typeFilter);
   }, []);
 
   return {
@@ -73,10 +84,12 @@ export const useClients = () => {
     error,
     pagination,
     searchTerm,
+    typeFilter,
     limit,
     fetchClients,
     addClient,
     handleSearch,
+    handleTypeFilterChange,
     handleLimitChange
   };
 };
