@@ -6,8 +6,9 @@ Frontend de alta performance e arquitetura robusta desenvolvido para a gestão d
 
 1. **Clone o repositório** e entre na pasta.
 2. **Instale as dependências:** `npm install`.
-3. **Inicie o servidor:** `npm run dev`.
-4. **Login (Mock):** `admin@mecanica.com` / `123456`.
+3. **(Opcional)** Configure a URL da API: crie `.env` com `VITE_API_BASE_URL=http://localhost:8081` (ou sua URL).
+4. **Inicie o servidor:** `npm run dev`.
+5. **Login:** `admin@mecanica.com` / `123456`.
 
 ---
 
@@ -35,6 +36,7 @@ A aplicação foi estruturada seguindo o princípio de **Camadas de Responsabili
 
 > [Consulte o arquivo CHANGELOG.md completo aqui](./CHANGELOG.md)
 
+- **v1.3.0:** Endpoint de logout, preservação de dados do formulário em erro, máscaras CPF/CNPJ na tabela.
 - **v1.2.0:** Centralização de strings mágicas e constantes.
 - **v1.1.0:** Motor de formulário dinâmico e validação Zod.
 - **v1.0.0:** Estrutura base, Auth e CRUD de Clientes.

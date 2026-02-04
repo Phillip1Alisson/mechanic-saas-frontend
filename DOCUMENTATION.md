@@ -16,7 +16,7 @@ O projeto segue uma separação rigorosa entre **UI**, **Estado de Domínio** e 
 Os componentes e hooks não dependem de instâncias concretas de serviços de rede. Eles dependem de interfaces. Isso permite que o `clientService` seja um Mock hoje e uma API PHP real amanhã, sem alterar uma única linha de código nos componentes.
 
 ### 1.3. Single Source of Truth (SSOT)
-Utilizamos o arquivo `src/constants/index.ts` como a única fonte de verdade para mensagens, configurações de UI e chaves de sistema, facilitando a internacionalização (i18n) e mudanças globais de comportamento.
+Utilizamos o arquivo `constants/index.ts` como a única fonte de verdade para mensagens, configurações de UI e chaves de sistema, facilitando a internacionalização (i18n) e mudanças globais de comportamento.
 
 ---
 
@@ -68,7 +68,7 @@ const schema = z.object({ name: z.string().min(3) });
 
 ### 3.1. Context API
 Limitada estritamente a estados globais que não mudam com frequência e precisam estar disponíveis em toda a árvore:
-- **AuthContext:** Token e dados do usuário logado.
+- **AuthContext:** Token e dados do usuário logado. Integra o fluxo de **logout** via endpoint `POST /logout` antes de descartar o token localmente.
 - **NotificationContext:** Engine de diálogos (Confirm/Error) desacoplada da UI de página.
 
 ### 3.2. Custom Hooks (O Cérebro)
@@ -89,8 +89,12 @@ A validação é baseada em **estratégias de formato**:
 
 ### Adicionando um novo campo ao Cliente:
 1. Adicione a propriedade em `types.ts`.
-2. Atualize o `clientSchema` em `ClientForm.tsx`.
+2. Atualize o `clientSchema` em `utils/schemas/clientSchema.ts`.
 3. Adicione a definição do campo no array `fields` do `ClientForm.tsx`.
 
 ### Alterando a URL da API:
 1. Modifique o objeto `API_ROUTES` em `constants/index.ts`.
+2. Rotas disponíveis: `LOGIN` (/login), `LOGOUT` (/logout), `CLIENTS` (/clients).
+
+### Máscaras na tabela de clientes:
+- A coluna **Documento** exibe CPF (000.000.000-00) ou CNPJ (00.000.000/0001-00) conforme o tipo (PF/PJ) do cliente, utilizando `formatDocument` de `utils/validators.ts`.

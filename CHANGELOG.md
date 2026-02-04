@@ -2,9 +2,17 @@
 
 Todas as mudanças técnicas relevantes para este teste técnico estão documentadas aqui para transparência de raciocínio.
 
+## [1.3.0] - Logout, UX de Formulário e Máscaras na Tabela
+### Adicionado
+- Endpoint de logout (`POST /logout`) integrado ao fluxo de autenticação.
+- Máscaras de CPF e CNPJ na coluna Documento da tabela de clientes (baseado no tipo PF/PJ).
+### Corrigido
+- Preservação dos dados do formulário de cliente quando ocorre erro no cadastro (os inputs não são mais limpos).
+- Limpeza automática da mensagem de erro ao editar qualquer campo após falha na submissão.
+
 ## [1.2.0] - Refatoração de Constantes e Limpeza de Código
 ### Adicionado
-- Criação do arquivo `src/constants/index.ts` para centralizar mensagens do sistema, chaves de localStorage e configurações de UI.
+- Criação do arquivo `constants/index.ts` para centralizar mensagens do sistema, chaves de localStorage e configurações de UI.
 ### Alterado
 - Refatoração de `authService.ts` e `useClients.ts` para consumir constantes centralizadas.
 - Padronização de mensagens de erro e sucesso em toda a aplicação.
